@@ -5,6 +5,7 @@ stop after the first day I remember its already December (like every Year)?
 
 - [x] Day 01
 - [x] Day 02
-- [ ] Day 03
+- [x] Day 03
+- [ ] Day 04
 
 [Advent of Code]: <https://adventofcode.com/>
