@@ -17,9 +17,9 @@ struct Seed {
 
 #[derive(Debug)]
 struct Range {
-    destination_range_start: usize,
-    source_range_start: usize,
-    range_length: usize,
+    dest_start: usize,
+    src_start: usize,
+    len: usize,
 }
 
 #[derive(Debug)]
@@ -48,11 +48,19 @@ fn main() -> Result<(), Box<dyn error::Error>> {
 impl Ranges {
     fn get(&self, source: usize) -> usize {
         for range in &self.0 {
-            // FIXME: This is too slow!
-            for i in 0..range.range_length {
-                if range.source_range_start + i == source {
-                    return range.destination_range_start + i;
-                }
+            let Range {
+                len,
+                src_start,
+                dest_start,
+            } = *range;
+
+            // Much faster than looping the range.
+            if source >= src_start && src_start + len > source {
+                return if dest_start > src_start {
+                    source + (dest_start - src_start)
+                } else {
+                    source - (src_start - dest_start)
+                };
             }
         }
 
@@ -151,9 +159,9 @@ impl str::FromStr for Almanac {
                     .parse::<usize>()?;
 
                 ranges.push(Range {
-                    destination_range_start,
-                    source_range_start,
-                    range_length,
+                    dest_start: destination_range_start,
+                    src_start: source_range_start,
+                    len: range_length,
                 });
             }
 
