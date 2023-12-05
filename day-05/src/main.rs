@@ -1,7 +1,10 @@
 use std::{
-    error,
+    error, io,
     str::{self, Lines},
 };
+
+#[cfg(not(feature = "part1"))]
+use std::ops;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct Seed {
@@ -16,39 +19,47 @@ struct Seed {
 }
 
 #[derive(Debug)]
-struct Range {
+struct MapRange {
     dest_start: usize,
     src_start: usize,
     len: usize,
 }
 
 #[derive(Debug)]
-struct Ranges(Vec<Range>);
+struct MapRanges(Vec<MapRange>);
 
 #[derive(Debug)]
 struct Almanac {
+    #[cfg(feature = "part1")]
     seeds: Vec<usize>,
-    seed_to_soil: Ranges,
-    soil_to_fertilizer: Ranges,
-    fertilizer_to_water: Ranges,
-    water_to_light: Ranges,
-    light_to_temperature: Ranges,
-    temperature_to_humidity: Ranges,
-    humidity_to_location: Ranges,
+    #[cfg(not(feature = "part1"))]
+    seeds: Vec<ops::Range<usize>>,
+    seed_to_soil: MapRanges,
+    soil_to_fertilizer: MapRanges,
+    fertilizer_to_water: MapRanges,
+    water_to_light: MapRanges,
+    light_to_temperature: MapRanges,
+    temperature_to_humidity: MapRanges,
+    humidity_to_location: MapRanges,
 }
 
 fn main() -> Result<(), Box<dyn error::Error>> {
-    let seed = include_str!("../input.txt")
+    let seed = io::stdin()
+        .lines()
+        .map_while(Result::ok)
+        .fold(String::new(), |s, l| s + &l + "\n")
         .parse::<Almanac>()?
         .lowest_location();
+
     println!("Lowest location number: {}", seed.location);
+
     Ok(())
 }
 
-impl Ranges {
+impl MapRanges {
     fn get(&self, source: usize) -> usize {
         for range in &self.0 {
-            let Range {
+            let MapRange {
                 len,
                 src_start,
                 dest_start,
@@ -69,6 +80,7 @@ impl Ranges {
 }
 
 impl Almanac {
+    #[cfg(feature = "part1")]
     fn seeds(&self) -> Vec<Seed> {
         let mut seeds = Vec::with_capacity(self.seeds.len());
 
@@ -96,11 +108,44 @@ impl Almanac {
         seeds
     }
 
+    #[cfg(feature = "part1")]
     fn lowest_location(&self) -> Seed {
         let mut lseed = None;
         for seed in self.seeds() {
             if lseed.is_none() || lseed.is_some_and(|s: Seed| s.location > seed.location) {
                 lseed = Some(seed);
+            }
+        }
+
+        lseed.unwrap()
+    }
+
+    #[cfg(not(feature = "part1"))]
+    fn lowest_location(&self) -> Seed {
+        let mut lseed = None;
+
+        for seeds in &self.seeds {
+            for seed in seeds.clone() {
+                let soil = self.seed_to_soil.get(seed);
+                let fertilizer = self.soil_to_fertilizer.get(soil);
+                let water = self.fertilizer_to_water.get(fertilizer);
+                let light = self.water_to_light.get(water);
+                let temperature = self.light_to_temperature.get(light);
+                let humidity = self.temperature_to_humidity.get(temperature);
+                let location = self.humidity_to_location.get(humidity);
+
+                if lseed.is_some_and(|seed: Seed| seed.location > location) || lseed.is_none() {
+                    lseed = Some(Seed {
+                        seed,
+                        soil,
+                        fertilizer,
+                        water,
+                        light,
+                        temperature,
+                        humidity,
+                        location,
+                    });
+                }
             }
         }
 
@@ -123,6 +168,7 @@ impl str::FromStr for Almanac {
             .skip("seeds: ".len())
             .peekable();
 
+        #[cfg(feature = "part1")]
         while chars.peek().is_some() {
             seeds.push(
                 (&mut chars)
@@ -132,9 +178,24 @@ impl str::FromStr for Almanac {
             );
         }
 
+        #[cfg(not(feature = "part1"))]
+        while chars.peek().is_some() {
+            let start = (&mut chars)
+                .take_while(|c| c.is_ascii_digit())
+                .collect::<String>()
+                .parse::<usize>()?;
+
+            let len = (&mut chars)
+                .take_while(|c| c.is_ascii_digit())
+                .collect::<String>()
+                .parse::<usize>()?;
+
+            seeds.push(start..(start + len));
+        }
+
         // Maps.
         lines.next().ok_or("expected empty line")?;
-        fn parse_seed_map(lines: &mut Lines) -> Result<Ranges, Box<dyn error::Error>> {
+        fn parse_seed_map(lines: &mut Lines) -> Result<MapRanges, Box<dyn error::Error>> {
             let mut ranges = Vec::new();
             for line in lines {
                 if line.is_empty() {
@@ -158,14 +219,14 @@ impl str::FromStr for Almanac {
                     .collect::<String>()
                     .parse::<usize>()?;
 
-                ranges.push(Range {
+                ranges.push(MapRange {
                     dest_start: destination_range_start,
                     src_start: source_range_start,
                     len: range_length,
                 });
             }
 
-            Ok(Ranges(ranges))
+            Ok(MapRanges(ranges))
         }
 
         // Seed to Soil map.
@@ -214,6 +275,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[cfg(feature = "part1")]
     fn example_part_1() {
         let almanac: Almanac = include_str!("../example.txt").parse().unwrap();
         let seeds = almanac.seeds();
@@ -230,6 +292,18 @@ mod tests {
         assert_eq!(
             almanac.lowest_location(), 
             Seed { seed: 13, soil: 13, fertilizer: 52, water: 41, light: 34, temperature: 34, humidity: 35, location: 35 },
+        );
+    }
+
+    #[test]
+    #[cfg(not(feature = "part1"))]
+    fn example_part_2() {
+        let almanac: Almanac = include_str!("../example.txt").parse().unwrap();
+
+        #[rustfmt::skip]
+        assert_eq!(
+            almanac.lowest_location(), 
+            Seed { seed: 82, soil: 84, fertilizer: 84, water: 84, light: 77, temperature: 45, humidity: 46, location: 46 },
         );
     }
 }
