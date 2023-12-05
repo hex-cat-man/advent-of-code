@@ -3,9 +3,11 @@
 Is this the year I try to solve these [Advent of Code] challenges? Or will I
 stop after the first day I remember its already December (like every Year)?
 
-- [x] Day 01
-- [x] Day 02
-- [x] Day 03
-- [x] Day 04
+- [2023](https://adventofcode.com/2023)
+    1. [x] [Day 1: Trebuchet?!](https://adventofcode.com/2023/day/1)
+    2. [x] [Day 2: Cube Conundrum](https://adventofcode.com/2023/day/2)
+    3. [x] [Day 3: Gear Ratios](https://adventofcode.com/2023/day/3)
+    4. [x] [Day 4: Scratchcards](https://adventofcode.com/2023/day/4)
+    5. [ ] [Day 5: If You Give A Seed A Fertilizer](https://adventofcode.com/2023/day/5)
 
 [Advent of Code]: <https://adventofcode.com/>
