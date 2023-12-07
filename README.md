@@ -11,6 +11,6 @@ stop after the first day I remember its already December (like every Year)?
     5. [x] [Day 5: If You Give A Seed A Fertilizer](https://adventofcode.com/2023/day/5)
        I did both stars, but left part 2's brute force impl :^(
     6. [x] [Day 6: Wait For It](https://adventofcode.com/2023/day/6)
-    7. [ ] [Day 7: Camel Cards](https://adventofcode.com/2023/day/7)
+    7. [x] [Day 7: Camel Cards](https://adventofcode.com/2023/day/7)
 
 [Advent of Code]: <https://adventofcode.com/>

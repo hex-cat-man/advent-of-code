@@ -1,16 +1,13 @@
-use std::{
-    cmp::{self, Ordering},
-    collections::HashMap,
-    error, io, str, usize,
-};
+use std::{cmp, collections::HashMap, error, io, str, usize};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 enum Card {
-    A,
-    K,
-    Q,
-    J,
-    T,
+    Ace,
+    King,
+    Queen,
+    #[cfg(feature = "part1")]
+    Joker,
+    Ten,
     Nine,
     Eight,
     Seven,
@@ -19,6 +16,9 @@ enum Card {
     Four,
     Three,
     Two,
+    #[cfg(not(feature = "part1"))]
+    /// A joker can be used for the strongest possible hand, but is the weakest card.
+    Joker,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -54,10 +54,6 @@ fn main() -> Result<(), Box<dyn error::Error>> {
 fn rank(mut hands: Vec<Hand>) -> usize {
     hands.sort();
 
-    for hand in &hands {
-        eprintln!("{hand:?}");
-    }
-
     let mut sum = 0;
     for (rank, hand) in hands.into_iter().enumerate() {
         sum += (rank + 1) * hand.bid;
@@ -67,13 +63,13 @@ fn rank(mut hands: Vec<Hand>) -> usize {
 }
 
 impl PartialOrd for Hand {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+    fn partial_cmp(&self, other: &Self) -> Option<cmp::Ordering> {
         Some(self.cmp(other))
     }
 }
 
 impl Ord for Hand {
-    fn cmp(&self, other: &Self) -> Ordering {
+    fn cmp(&self, other: &Self) -> cmp::Ordering {
         match self.hand_type.cmp(&other.hand_type) {
             cmp::Ordering::Equal => {
                 for (i, card) in self.cards.iter().enumerate() {
@@ -95,9 +91,17 @@ impl From<[Card; 5]> for HandType {
     fn from(mut cards: [Card; 5]) -> Self {
         cards.sort();
 
+        #[cfg(not(feature = "part1"))]
+        let mut jokers = 0;
         let mut partitions = HashMap::new();
 
         for card in cards {
+            #[cfg(not(feature = "part1"))]
+            if card == Card::Joker {
+                jokers += 1;
+                continue;
+            } 
+
             if let Some(n) = partitions.get(&card) {
                 partitions.insert(card, n + 1);
             } else {
@@ -113,15 +117,30 @@ impl From<[Card; 5]> for HandType {
 
         partitions.sort();
 
-        match partitions.as_slice() {
-            [1, 1, 1, 1, 1] => HandType::HighCard,
-            [0, 1, 1, 1, 2] => HandType::OnePair,
-            [_, _, _, 2, 2] => HandType::TwoPair,
-            [_, _, _, 1, 3] => HandType::ThreeOfKind,
-            [_, _, _, 2, 3] => HandType::FullHouse,
-            [_, _, _, _, 4] => HandType::FourOfKind,
-            [_, _, _, _, 5] => HandType::FiveOfKind,
-            _ => unreachable!(),
+        #[cfg(feature = "part1")]
+        let jokers = 0;
+
+        match (jokers, partitions.as_slice()) {
+            (0, [_, _, _, _, 5]) => HandType::FiveOfKind,
+            (0, [_, _, _, _, 4]) => HandType::FourOfKind,
+            (_, [_, _, _, _, 4]) => HandType::FiveOfKind,
+            (0, [_, _, _, 2, 3]) => HandType::FullHouse,
+            (0, [_, _, _, 1, 3]) => HandType::ThreeOfKind,
+            (_, [_, _, _, 1, 3]) => HandType::FourOfKind,
+            (0, [_, _, _, 2, 2]) => HandType::TwoPair,
+            (_, [_, _, _, 2, 2]) => HandType::FullHouse,
+            (0, [_, 1, 1, 1, 2]) => HandType::OnePair,
+            (_, [_, 1, 1, 1, 2]) => HandType::TwoPair,
+            (0, [1, 1, 1, 1, 1]) => HandType::HighCard,
+            (5 | 4, _) => HandType::FiveOfKind,
+            (3, [_, _, _, _, 2]) => HandType::FiveOfKind,
+            (3, [_, _, _, _, 1]) => HandType::FourOfKind,
+            (2, [_, _, _, _, 3]) => HandType::FiveOfKind,
+            (2, [_, _, _, _, 1]) => HandType::ThreeOfKind,
+            (1, [_, _, _, _, 2]) => HandType::ThreeOfKind,
+            (2, [_, _, _, _, 2]) => HandType::FourOfKind,
+            (1, [_, _, _, _, 1]) => HandType::OnePair,
+            invalid => unreachable!("{invalid:?}"),
         }
     }
 }
@@ -131,11 +150,11 @@ impl TryFrom<char> for Card {
 
     fn try_from(value: char) -> Result<Self, Self::Error> {
         Ok(match value {
-            'A' => Card::A,
-            'K' => Card::K,
-            'Q' => Card::Q,
-            'J' => Card::J,
-            'T' => Card::T,
+            'A' => Card::Ace,
+            'K' => Card::King,
+            'Q' => Card::Queen,
+            'J' => Card::Joker,
+            'T' => Card::Ten,
             '9' => Card::Nine,
             '8' => Card::Eight,
             '7' => Card::Seven,
@@ -182,6 +201,7 @@ mod tests {
 
     use super::*;
 
+    #[cfg(feature = "part1")]
     #[test]
     fn example_part1() {
         let hands = include_str!("../sample.txt")
@@ -192,13 +212,33 @@ mod tests {
 
         #[rustfmt::skip]
         assert_ne!(hands, vec![
-            Hand { bid: 765, cards: [Card::Three, Card::Two, Card::T, Card::Three, Card::K], hand_type: HandType::OnePair },
+            Hand { bid: 765, cards: [Card::Three, Card::Two, Card::T, Card::Three, Card::King], hand_type: HandType::OnePair },
             Hand { bid: 684, cards: [Card::T, Card::Five, Card::Five, Card::J, Card::Five], hand_type: HandType::TwoPair },
-            Hand { bid: 28, cards: [Card::K, Card::K, Card::Six, Card::Seven, Card::Seven], hand_type: HandType::TwoPair },
-            Hand { bid: 220, cards: [Card::K, Card::T, Card::J, Card::J, Card::T], hand_type: HandType::ThreeOfKind },
-            Hand { bid: 483, cards: [Card::Q, Card::Q, Card::Q, Card::J, Card::A], hand_type: HandType::ThreeOfKind },
+            Hand { bid: 28, cards: [Card::King, Card::King, Card::Six, Card::Seven, Card::Seven], hand_type: HandType::TwoPair },
+            Hand { bid: 220, cards: [Card::King, Card::T, Card::J, Card::J, Card::T], hand_type: HandType::ThreeOfKind },
+            Hand { bid: 483, cards: [Card::Queen, Card::Queen, Card::Queen, Card::J, Card::Ace], hand_type: HandType::ThreeOfKind },
         ]);
 
         assert_eq!(rank(hands), 6440);
+    }
+
+    #[test]
+    fn example_part2() {
+        let hands = include_str!("../sample.txt")
+            .lines()
+            .map(Hand::from_str)
+            .map_while(Result::ok)
+            .collect::<Vec<_>>();
+
+        #[rustfmt::skip]
+        assert_ne!(hands, vec![
+            Hand { bid: 765, cards: [Card::Three, Card::Two, Card::Ten, Card::Three, Card::King], hand_type: HandType::OnePair },
+            Hand { bid: 684, cards: [Card::Ten, Card::Five, Card::Five, Card::Joker, Card::Five], hand_type: HandType::TwoPair },
+            Hand { bid: 28, cards: [Card::King, Card::King, Card::Six, Card::Seven, Card::Seven], hand_type: HandType::TwoPair },
+            Hand { bid: 220, cards: [Card::King, Card::Ten, Card::Joker, Card::Joker, Card::Ten], hand_type: HandType::ThreeOfKind },
+            Hand { bid: 483, cards: [Card::Queen, Card::Queen, Card::Queen, Card::Joker, Card::Ace], hand_type: HandType::ThreeOfKind },
+        ]);
+
+        assert_eq!(rank(hands), 5905);
     }
 }
