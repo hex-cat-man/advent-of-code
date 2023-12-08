@@ -12,5 +12,6 @@ stop after the first day I remember its already December (like every Year)?
        I did both stars, but left part 2's brute force impl :^(
     6. [x] [Day 6: Wait For It](https://adventofcode.com/2023/day/6)
     7. [x] [Day 7: Camel Cards](https://adventofcode.com/2023/day/7)
+    8. [ ] [Day 8: Haunted Wasteland](https://adventofcode.com/2023/day/8)
 
 [Advent of Code]: <https://adventofcode.com/>
