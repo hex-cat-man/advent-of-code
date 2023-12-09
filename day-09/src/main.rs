@@ -6,13 +6,18 @@ type Error = Box<dyn error::Error>;
 struct History(Vec<i32>);
 
 fn main() -> Result<(), Error> {
+    #[cfg(feature = "part1")]
+    let func = History::extrapolate_next;
+    #[cfg(not(feature = "part1"))]
+    let func = History::extrapolate_prev;
+
     let result = io::stdin()
         .lines()
         .map_while(Result::ok)
         .map(|s| s.parse::<History>())
         .collect::<Result<Vec<_>, _>>()?
-        .iter()
-        .map(History::extrapolate)
+        .into_iter()
+        .map(func)
         .sum::<i32>();
 
     println!("{result}");
@@ -21,9 +26,9 @@ fn main() -> Result<(), Error> {
 }
 
 impl History {
-    fn extrapolate(&self) -> i32 {
+    fn extrapolate(self, next: bool) -> i32 {
         let mut values: Vec<i32> = Vec::new();
-        let mut seq = self.0.clone();
+        let mut seq = self.0;
 
         while !seq.iter().all(|n| *n == 0) {
             let seqx = mem::take(&mut seq);
@@ -31,10 +36,28 @@ impl History {
                 seq.push(seqx[i] - seqx[i - 1]);
             }
 
-            values.push(seqx.last().cloned().unwrap_or_default());
+            if next {
+                values.push(seqx.last().cloned().unwrap_or_default());
+            } else {
+                values.push(seqx.first().cloned().unwrap_or_default());
+            }
         }
 
-        values.iter().sum()
+        if next {
+            values.into_iter().sum()
+        } else {
+            values.into_iter().rev().fold(0, |n, l| l - n)
+        }
+    }
+
+    #[cfg(any(test, feature = "part1"))]
+    fn extrapolate_next(self) -> i32 {
+        self.extrapolate(true)
+    }
+
+    #[cfg(any(test, not(feature = "part1")))]
+    fn extrapolate_prev(self) -> i32 {
+        self.extrapolate(false)
     }
 }
 
@@ -56,7 +79,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn example() {
+    fn example_parse() {
         let histories = include_str!("../example.txt")
             .lines()
             .map(|s| s.parse::<History>())
@@ -71,7 +94,33 @@ mod tests {
                 History(vec![10, 13, 16, 21, 30, 45]),
             ]
         );
+    }
 
-        assert_eq!(histories.iter().map(History::extrapolate).sum::<i32>(), 114);
+    #[test]
+    fn example_part1() {
+        let result = include_str!("../example.txt")
+            .lines()
+            .map(|s| s.parse::<History>())
+            .collect::<Result<Vec<_>, _>>()
+            .unwrap()
+            .into_iter()
+            .map(History::extrapolate_next)
+            .sum::<i32>();
+
+        assert_eq!(result, 114);
+    }
+
+    #[test]
+    fn example_part2() {
+        let result = include_str!("../example.txt")
+            .lines()
+            .map(|s| s.parse::<History>())
+            .collect::<Result<Vec<_>, _>>()
+            .unwrap()
+            .into_iter()
+            .map(History::extrapolate_prev)
+            .sum::<i32>();
+
+        assert_eq!(result, 2);
     }
 }
