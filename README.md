@@ -1,6 +1,6 @@
-# Advent of Code 2023
+# Advent of Code
 
-Is this the year I try to solve these [Advent of Code] challenges? Or will I
-stop after the first day I remember its already December (like every Year)?
+My attempts at the yearly [Advent of Code] puzzles. Each year goes into its own
+branch (e.g. `2023`).
 
 [Advent of Code]: <https://adventofcode.com/>
