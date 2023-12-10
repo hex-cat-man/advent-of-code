@@ -105,7 +105,7 @@ mod tests {
 
     #[test]
     fn example1() {
-        let mut input = include_str!("../example1.txt").lines();
+        let mut input = include_str!("../../examples/08-1.txt").lines();
 
         assert_eq!(
             walk_to_zzz(
@@ -119,7 +119,7 @@ mod tests {
 
     #[test]
     fn example2() {
-        let mut input = include_str!("../example2.txt").lines();
+        let mut input = include_str!("../../examples/08-2.txt").lines();
 
         assert_eq!(
             walk_to_zzz(

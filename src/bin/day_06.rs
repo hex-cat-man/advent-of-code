@@ -91,7 +91,7 @@ mod tests {
     fn example_part_1() {
         // Time:      7  15   30
         // Distance:  9  40  200
-        let pairs = split_pairs(include_str!("../sample.txt"));
+        let pairs = split_pairs(include_str!("../../examples/06.txt"));
 
         assert_eq!(pairs, vec![(7, 9), (15, 40), (30, 200)]);
         assert_eq!(solve(pairs), 288);
@@ -101,7 +101,7 @@ mod tests {
     fn example_part_2() {
         // Time:      7  15   30
         // Distance:  9  40  200
-        let pair = parse_pair(include_str!("../sample.txt"));
+        let pair = parse_pair(include_str!("../../examples/06.txt"));
 
         assert_eq!(pair, (71530, 940200));
         assert_eq!(solve(vec![pair]), 71503);

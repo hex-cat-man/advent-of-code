@@ -277,7 +277,7 @@ mod tests {
     #[test]
     #[cfg(feature = "part1")]
     fn example_part_1() {
-        let almanac: Almanac = include_str!("../example.txt").parse().unwrap();
+        let almanac: Almanac = include_str!("../../examples/05.txt").parse().unwrap();
         let seeds = almanac.seeds();
 
         #[rustfmt::skip]
@@ -298,7 +298,7 @@ mod tests {
     #[test]
     #[cfg(not(feature = "part1"))]
     fn example_part_2() {
-        let almanac: Almanac = include_str!("../example.txt").parse().unwrap();
+        let almanac: Almanac = include_str!("../../examples/05.txt").parse().unwrap();
 
         #[rustfmt::skip]
         assert_eq!(

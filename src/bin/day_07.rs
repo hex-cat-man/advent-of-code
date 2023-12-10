@@ -192,7 +192,7 @@ mod tests {
 
     #[test]
     fn example() {
-        let hands = include_str!("../sample.txt")
+        let hands = include_str!("../../examples/07.txt")
             .lines()
             .map(Hand::from_str)
             .map_while(Result::ok)

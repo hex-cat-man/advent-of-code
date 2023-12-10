@@ -80,7 +80,7 @@ mod tests {
 
     #[test]
     fn example_parse() {
-        let histories = include_str!("../example.txt")
+        let histories = include_str!("../../examples/09.txt")
             .lines()
             .map(|s| s.parse::<History>())
             .collect::<Result<Vec<_>, _>>()
@@ -98,7 +98,7 @@ mod tests {
 
     #[test]
     fn example_part1() {
-        let result = include_str!("../example.txt")
+        let result = include_str!("../../examples/09.txt")
             .lines()
             .map(|s| s.parse::<History>())
             .collect::<Result<Vec<_>, _>>()
@@ -112,7 +112,7 @@ mod tests {
 
     #[test]
     fn example_part2() {
-        let result = include_str!("../example.txt")
+        let result = include_str!("../../examples/09.txt")
             .lines()
             .map(|s| s.parse::<History>())
             .collect::<Result<Vec<_>, _>>()
