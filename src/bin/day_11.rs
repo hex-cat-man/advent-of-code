@@ -1,11 +1,19 @@
 use std::{error, io};
 
+#[cfg(feature = "part1")]
+const VOID: usize = 1;
+
+#[cfg(not(feature = "part1"))]
+const VOID: usize = 1_000_000;
+
 type Error = Box<dyn error::Error>;
 
 type Pos = (usize, usize);
 
 #[derive(Debug, Clone, Copy)]
 enum Cell {
+    /// Empty space, equal to a million empty cells.
+    Abyss,
     Empty,
     Galaxy,
 }
@@ -16,7 +24,7 @@ struct Universe(Vec<Vec<Cell>>);
 fn main() -> Result<(), Error> {
     let result = Universe::try_from_lines(io::stdin().lines().map_while(Result::ok))?
         .expand()
-        .pairs()
+        .pairs(VOID)
         .into_iter()
         .map(distance)
         .sum::<usize>();
@@ -27,26 +35,11 @@ fn main() -> Result<(), Error> {
 }
 
 fn distance(points: (Pos, Pos)) -> usize {
-    let ((mut ax, mut ay), (bx, by)) = points;
     let mut distance = 0;
 
-    while ax != bx {
-        if ax < bx {
-            ax += 1;
-        } else {
-            ax -= 1;
-        }
-        distance += 1;
-    }
-
-    while ay != by {
-        if ay < by {
-            ay += 1;
-        } else {
-            ay -= 1;
-        }
-        distance += 1;
-    }
+    let ((ax, ay), (bx, by)) = points;
+    distance += if ax < bx { bx - ax } else { ax - bx };
+    distance += if ay < by { by - ay } else { ay - by };
 
     distance
 }
@@ -89,7 +82,7 @@ impl Universe {
         for (x, is_empty) in empty_cols.iter().enumerate() {
             if *is_empty {
                 for row in sky.iter_mut() {
-                    row.insert(x + x_offset, Cell::Empty);
+                    row.insert(x + x_offset, Cell::Abyss);
                 }
 
                 x_offset += 1;
@@ -99,7 +92,7 @@ impl Universe {
         let mut y_offset = 0;
         for (y, is_empty) in empty_rows.iter().enumerate() {
             if *is_empty {
-                sky.insert(y + y_offset, vec![Cell::Empty; x_len + x_offset]);
+                sky.insert(y + y_offset, vec![Cell::Abyss; x_len + x_offset]);
 
                 y_offset += 1;
             }
@@ -108,7 +101,7 @@ impl Universe {
         self
     }
 
-    fn pairs(&self) -> Vec<(Pos, Pos)> {
+    fn pairs(&self, void: usize) -> Vec<(Pos, Pos)> {
         let Universe(sky) = self;
 
         let mut galaxies: Vec<Pos> = Vec::new();
@@ -116,6 +109,29 @@ impl Universe {
             for (x, cell) in row.iter().enumerate() {
                 if let Cell::Galaxy = cell {
                     galaxies.push((x, y));
+                }
+            }
+        }
+
+        if void < 1 {
+            panic!("void smaller than one");
+        }
+
+        // Invlate the coordinates by a multiple of abyss cells in their x/y path.
+        if void > 1 {
+            for galaxy in galaxies.iter_mut() {
+                for row in sky.iter().take(galaxy.1) {
+                    if let Some(Cell::Abyss) = row.first() {
+                        galaxy.1 += void - 2;
+                    }
+                }
+
+                if let Some(row) = sky.first() {
+                    for col in row.iter().take(galaxy.0) {
+                        if let Cell::Abyss = col {
+                            galaxy.0 += void - 2;
+                        }
+                    }
                 }
             }
         }
@@ -131,28 +147,6 @@ impl Universe {
         }
 
         pairs
-    }
-
-    fn print(&self) -> String {
-        let Universe(sky) = self;
-
-        let y_len = sky.len();
-        let x_len = sky.first().map(Vec::len).unwrap_or_default();
-
-        let mut s = String::with_capacity(y_len * x_len * y_len);
-
-        for row in sky {
-            for cell in row {
-                s.push(match cell {
-                    Cell::Empty => '.',
-                    Cell::Galaxy => '#',
-                })
-            }
-
-            s.push('\n');
-        }
-
-        s
     }
 }
 
@@ -181,7 +175,23 @@ mod tests {
             374,
             universe
                 .expand()
-                .pairs()
+                .pairs(1)
+                .into_iter()
+                .map(distance)
+                .sum::<usize>()
+        );
+    }
+
+    #[test]
+    fn example_part_2() {
+        let universe =
+            Universe::try_from_lines(include_str!("../../examples/11.txt").lines()).unwrap();
+
+        assert_eq!(
+            1030,
+            universe
+                .expand()
+                .pairs(10)
                 .into_iter()
                 .map(distance)
                 .sum::<usize>()
