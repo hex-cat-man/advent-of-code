@@ -13,6 +13,8 @@ stop after the first day (like every Year)?
 7. [x] [Day 7: Camel Cards](https://adventofcode.com/2023/day/7)
 8. [ ] [Day 8: Haunted Wasteland](https://adventofcode.com/2023/day/8)
 9. [x] [Day 9: Mirage Maintenance](https://adventofcode.com/2023/day/9)
+10. [ ] [Day 10: Pipe Maze](https://adventofcode.com/2023/day/10)
+11. [ ] [Day 11: Cosmic Expansion](https://adventofcode.com/2023/day/11)
 
 ## Running the challenges
 
