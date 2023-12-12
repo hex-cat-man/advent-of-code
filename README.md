@@ -15,6 +15,7 @@ stop after the first day (like every Year)?
 9. [x] [Day 9: Mirage Maintenance](https://adventofcode.com/2023/day/9)
 10. [x] [Day 10: Pipe Maze](https://adventofcode.com/2023/day/10)
 11. [x] [Day 11: Cosmic Expansion](https://adventofcode.com/2023/day/11)
+12. [ ] [Day 12: Hot Springs](https://adventofcode.com/2023/day/12)
 
 ## Running the challenges
 
