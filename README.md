@@ -17,6 +17,7 @@ stop after the first day (like every Year)?
 11. [x] [Day 11: Cosmic Expansion](https://adventofcode.com/2023/day/11)
 12. [ ] [Day 12: Hot Springs](https://adventofcode.com/2023/day/12)
 13. [ ] [Day 13: Point of Incidence](https://adventofcode.com/2023/day/13)
+14. [ ] [Day 14: Parabolic Reflector Dish](https://adventofcode.com/2023/day/13)
 
 ## Running the challenges
 
