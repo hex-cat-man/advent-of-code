@@ -18,7 +18,7 @@ stop after the first day (like every Year)?
 12. [ ] [Day 12: Hot Springs](https://adventofcode.com/2023/day/12)
 13. [ ] [Day 13: Point of Incidence](https://adventofcode.com/2023/day/13)
 14. [ ] [Day 14: Parabolic Reflector Dish](https://adventofcode.com/2023/day/14)
-15. [ ] [Day 15: Lens Library](https://adventofcode.com/2023/day/15)
+15. [x] [Day 15: Lens Library](https://adventofcode.com/2023/day/15)
 
 ## Running the challenges
 
