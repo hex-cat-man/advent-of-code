@@ -1,5 +1,8 @@
 use std::{error, io};
 
+#[cfg(not(feature = "part1"))]
+use std::thread;
+
 type Error = Box<dyn error::Error>;
 
 type Pos = (isize, isize);
@@ -34,11 +37,46 @@ struct Contraption {
 }
 
 fn main() -> Result<(), Error> {
-    let mut tiles = Contraption::try_from_lines(io::stdin().lines().map_while(Result::ok))?;
+    #[cfg(feature = "part1")]
+    let result = {
+        let mut tiles = Contraption::try_from_lines(io::stdin().lines().map_while(Result::ok))?;
+        tiles.illuminate((0, 0), Direction::Right);
+        tiles.energized_count()
+    };
 
-    tiles.illuminate((0, 0), Direction::Right);
+    #[cfg(not(feature = "part1"))]
+    let result = {
+        let tiles = Contraption::try_from_lines(io::stdin().lines().map_while(Result::ok))?;
 
-    println!("{}", tiles.energized_count());
+        // I am terribly ashamed of my actions (but its not to bad when compiled in release, so...).
+        tiles
+            .edge()
+            .chunks(16) // Number of max concurrent threads.
+            .flat_map(|chunk| {
+                let jobs = chunk
+                    .iter()
+                    .map(|(pos, direction)| {
+                        let mut tiles = tiles.clone();
+
+                        let pos = *pos;
+                        let direction = *direction;
+
+                        thread::spawn(move || {
+                            tiles.illuminate(pos, direction);
+                            tiles.energized_count()
+                        })
+                    })
+                    .collect::<Vec<_>>();
+
+                jobs.into_iter().map(|handle| handle.join())
+            })
+            .try_fold(0, |max, result| match result {
+                Ok(n) => Ok(n.max(max)),
+                Err(_) => Err("error in thread"),
+            })?
+    };
+
+    println!("{}", result);
 
     Ok(())
 }
@@ -143,6 +181,44 @@ impl Contraption {
             .map(|row| row.iter().filter(|tile| tile.energized > 0).count())
             .sum::<usize>()
     }
+
+    #[cfg(any(test, not(feature = "part1")))]
+    fn edge(&self) -> Vec<(Pos, Direction)> {
+        let mut edge = Vec::new();
+
+        if let Some(top) = self
+            .grid
+            .first()
+            .map(|row| row.iter().enumerate().map(|(x, _)| x).collect::<Vec<_>>())
+        {
+            let left = self
+                .grid
+                .iter()
+                .enumerate()
+                .map(|(y, _)| y)
+                .collect::<Vec<_>>();
+
+            for x in &top {
+                edge.push(((*x as isize, 0), Direction::Down));
+            }
+
+            for y in &left {
+                edge.push(((0, *y as isize), Direction::Right));
+            }
+
+            let bottom = left.len() - 1;
+            for x in &top {
+                edge.push(((*x as isize, bottom as isize), Direction::Up));
+            }
+
+            let right = top.len() - 1;
+            for y in left.iter().rev() {
+                edge.push(((right as isize, *y as isize), Direction::Left));
+            }
+        }
+
+        edge
+    }
 }
 
 impl TryFrom<char> for Tile {
@@ -187,5 +263,21 @@ mod tests {
         tiles.illuminate((0, 0), Direction::Right);
 
         assert_eq!(46, tiles.energized_count());
+    }
+
+    #[test]
+    fn example_part_2() {
+        let tiles =
+            Contraption::try_from_lines(include_str!("../../examples/16.txt").lines()).unwrap();
+
+        let mut max = 0;
+
+        for (pos, direction) in tiles.edge() {
+            let mut tiles = tiles.clone();
+            tiles.illuminate(pos, direction);
+            max = tiles.energized_count().max(max);
+        }
+
+        assert_eq!(51, max);
     }
 }
