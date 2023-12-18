@@ -2,8 +2,12 @@
 //!
 //! Oh hey, its [Pick's theorem] and the [Shoelace formula] again!
 //!
+//! Adding this for future reference: others used [Stokes' theorem]/[Green's theorem].
+//!
 //! [Pick's theorem]: <https://en.wikipedia.org/wiki/Pick's_theorem>
 //! [Shoelace formula]: <https://en.wikipedia.org/wiki/Shoelace_formula>
+//! [Stokes' theorem]: <https://en.wikipedia.org/wiki/Stokes%27_theorem>
+//! [Green's theorem]: <https://en.wikipedia.org/wiki/Green%27s_theorem>
 
 use std::{error, io};
 
