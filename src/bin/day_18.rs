@@ -104,14 +104,13 @@ fn area(mut coordinates: Vec<Pos>, boundary: i64) -> i64 {
         sum *= -1;
     }
 
-    // Use Pick's theorem to get the interior size of the boundary.
-    // A = i + (b / 2) - 1
-    // i = -((b / 2) - 1 - A)
     let area = sum / 2;
-    let interior = -((boundary / 2) - 1 - area);
 
-    // This time the boundary counts to the area we want (the ditch).
-    interior + boundary
+    // Use Pick's theorem to get the size of the interior + boundary.
+    // A = i + (b / 2) - 1     | - (b / 2) + 1
+    // i = A - (b / 2) + 1     | + b
+    // i + b = A + (b / 2) + 1
+    area + (boundary / 2) + 1
 }
 
 #[cfg(test)]
