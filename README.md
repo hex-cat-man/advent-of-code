@@ -22,6 +22,7 @@ stop after the first day (like every Year)?
 16. [x] [Day 16: The Floor Will Be Lava](https://adventofcode.com/2023/day/16)
 17. -
 18. [x] [Day 18: Lavaduct Lagoon](https://adventofcode.com/2023/day/18)
+19. [ ] [Day 19: Aplenty](https://adventofcode.com/2023/day/19)
 
 ## Running the challenges
 
